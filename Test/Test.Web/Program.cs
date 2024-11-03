@@ -1,7 +1,5 @@
-using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Test.Web;
-using Test.Web.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,10 +29,7 @@ builder.Services.AddOptions<CacheSettings>().Configure((CacheSettings settings, 
 
 var app = builder.Build();
 
-app.MapGet("/", (HttpContext HttpContext) =>
-{
-    return Results.Ok($"{HttpContext.Request.GetDisplayUrl()}" + "beststories");
-});
+app.MapGet("/", (HttpContext httpContext) => Results.LocalRedirect("/beststories"));
 
 app.MapGet("/beststories", BestStories);
 
@@ -42,6 +37,10 @@ app.Run();
 
 static async Task<IResult> BestStories([FromServices] ITestService testService, HttpContext httpContext, [FromQuery] int limit = 1)
 {
+    if (limit < 1 || limit > 500)
+    {
+        return Results.BadRequest($"Require {nameof(limit)} value between 1 and 500");
+    }
     var result = await testService.GetBestStoriesAsync(limit, httpContext.RequestAborted);
     return Results.Ok(result);
 }

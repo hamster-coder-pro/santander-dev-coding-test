@@ -42,7 +42,8 @@ internal sealed class CachedTestService : ITestService
                 result = await CacheProvider.GetResultAsync(cancellationToken);
                 if (result.Count < limit)
                 {
-                    result = await InnerService.GetBestStoriesAsync(limit, cancellationToken);
+                    var retrieveLimit = (int) Math.Pow(2, Math.Ceiling(Math.Log2(limit)));
+                    result = await InnerService.GetBestStoriesAsync(retrieveLimit, cancellationToken);
                     await CacheUpdater.SetResultAsync(result, cancellationToken);
                 }
             }
